@@ -39,7 +39,8 @@ void putEqual(int pop);
 void putAdd(int pop);
 int lookup(int num);
 int sym_num=0,countword=0,flag=0;
-int add_flag = 0, multi_flag = 0,add_second_flag=0,multi_second_flag=0;
+int add_flag = 0, multi_flag = 0,multi_second_flag=0;
+int add_confirm = 0;
 int sort=0;
 lexword lw[400];
 ofstream fouterr("F:\\grammarerror.txt ",ios::out);//载入自己设定路径输入文件
@@ -134,7 +135,32 @@ void putEqual(int pop)
 }
 void putAdd(int pop)
 {
-	
+	Add.end = 0;
+	four << "(" << sort << ")";
+	four << "<";
+	while (Add.end != pop-1)
+	{
+		if (Add.stack[Add.end] == 120)
+		{
+			four << "t1";
+		}
+		else
+		{
+			four << lw[Add.stack[Add.end]].word;
+		}
+		Add.end++;
+		four << ",";
+	}
+	if (Add.stack[Add.end] == 120)
+	{
+		four << "t1";
+	}
+	four << ">" << endl;
+	sort++;
+	add_flag = 0;
+	add_confirm = 0;
+
+
 }
 //〈程序〉→start：AB#
 void A()
@@ -352,6 +378,7 @@ void J()//
     {
     	Equal.stack[Equal.first++]=sym_num;
         Next();
+		
         N();
     }
     else
@@ -370,7 +397,14 @@ void N()//
     }
     else
     {
+		Next();
+		if (lw[sym_num].num == 19 || lw[sym_num].num == 20)
+		{
+			add_flag = 1;
+		}
+		Before();
         R();
+	
     }
 }
 
@@ -519,16 +553,9 @@ void R()//
         if (lw[sym_num].num == 19 || lw[sym_num].num == 20)
         {
 			
-			add_flag = 1;
+			add_confirm = 1;
 			Add.first = 0;
-			if (lw[sym_num].num == 19)
-			{
-				Add.stack[Add.first++] = 120;
-			}
-			else
-			{
-				Add.stack[Add.first++] = 121;
-			}
+			Add.stack[Add.first++] = sym_num;
             Next();
             R();
         }
@@ -611,33 +638,54 @@ void U()//
 		}
 		else if (lw[sym_num].num == 37)
 		{
-			if (add_flag == 1 && add_second_flag == 0)
+			if (add_flag == 1)
 			{
-				int temp = Equal.stack[Equal.first--];
-				flag_work = lookup(temp);
-				if (flag_work == 1)
+				
+				if (add_confirm==1)
 				{
-					Add.stack[Add.first++] = temp;
+					int a = Equal.first - 1;
+					int temp = Equal.stack[a];
+					flag_work = lookup(temp);
+					if (flag_work == 1)
+					{
+						Equal.first--;
+						Add.stack[Add.first++] = temp;
+					}
+					else
+					{
+						flag = 1;
+						fouterr << "赋值变量未定义" << endl;
+					}
+					flag_work = lookup(sym_num);
+					if (flag_work == 1)
+					{
+						Add.stack[Add.first++] = sym_num;
+						Add.stack[Add.first++] = 120;
+						putAdd(Add.first);
+					}
+					else
+					{
+						flag = 1;
+						fouterr << "赋值变量未定义" << endl;
+					}
+					
 				}
 				else
 				{
-					flag = 1;
-					fouterr << "赋值变量未定义" << endl;
+					flag_work = lookup(sym_num);
+					if (flag_work == 1)
+					{
+						Equal.stack[Equal.first++] = sym_num;
+					}
+					else
+					{
+						flag = 1;
+						fouterr << "赋值变量未定义" << endl;
+					}
 				}
-				add_second_flag = 1;
-			}
-			else if (add_flag == 1 && add_second_flag == 1)
-			{
-				flag_work = lookup(sym_num);
-				if (flag_work == 1)
-				{
-					Add.stack[Add.first++] = sym_num;
-				}
-				else
-				{
-					flag = 1;
-					fouterr << "赋值变量未定义" << endl;
-				}
+				
+					
+				
 			}
 			else
 			{
@@ -655,16 +703,17 @@ void U()//
 					else
 						flag_work = 0;
 				}
+				if (flag_work == 1)
+				{
+					symbollist.num[symbollist.num_count++] = symbollist.num[tag];
+				}
+				else
+				{
+					flag = 1;
+					fouterr << "赋值变量未定义" << endl;
+				}
 			}
-			if (flag_work == 1)
-			{
-				symbollist.num[symbollist.num_count++] = symbollist.num[tag];
-			}
-			else
-			{
-				flag = 1;
-				fouterr << "赋值变量未定义" << endl;
-			}
+			
 
 		}
         return;
