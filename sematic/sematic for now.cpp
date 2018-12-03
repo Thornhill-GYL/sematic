@@ -36,6 +36,7 @@ void Z();
 int newtemp(int show_time);
 void putstart(int pop);
 void putEqual(int pop);
+void putAdd(int pop);
 int lookup(int num);
 int sym_num=0,countword=0,flag=0;
 int add_flag = 0, multi_flag = 0,add_second_flag=0,multi_second_flag=0;
@@ -52,7 +53,7 @@ typedef struct
 Four start;
 Four Equal;
 Four Judge;
-
+Four Add;
 
 typedef struct 
 {
@@ -130,6 +131,10 @@ void putEqual(int pop)
 	four<<lw[Equal.stack[0]].word;
 	four<<">"<<endl;
 	sort++;	
+}
+void putAdd(int pop)
+{
+	
 }
 //〈程序〉→start：AB#
 void A()
@@ -513,10 +518,17 @@ void R()//
         Next();
         if (lw[sym_num].num == 19 || lw[sym_num].num == 20)
         {
-			Four Add;
+			
 			add_flag = 1;
 			Add.first = 0;
-			Add.stack[Add.first++] = 120;
+			if (lw[sym_num].num == 19)
+			{
+				Add.stack[Add.first++] = 120;
+			}
+			else
+			{
+				Add.stack[Add.first++] = 121;
+			}
             Next();
             R();
         }
@@ -599,20 +611,50 @@ void U()//
 		}
 		else if (lw[sym_num].num == 37)
 		{
-			if(add_flag==1)
-			for (int i = 0; i < symbollist.name_count; i++)
+			if (add_flag == 1 && add_second_flag == 0)
 			{
-				if (strcmp(lw[symbollist.name[i]].word, lw[sym_num].word) == 0)
+				int temp = Equal.stack[Equal.first--];
+				flag_work = lookup(temp);
+				if (flag_work == 1)
 				{
-					Equal.stack[Equal.first++] = sym_num;
-					Equal.stack[Equal.first++] = 100;
-					putEqual(Equal.first);
-					flag_work = 1;
-					tag = i;
-					break;
+					Add.stack[Add.first++] = temp;
 				}
 				else
-					flag_work = 0;
+				{
+					flag = 1;
+					fouterr << "赋值变量未定义" << endl;
+				}
+				add_second_flag = 1;
+			}
+			else if (add_flag == 1 && add_second_flag == 1)
+			{
+				flag_work = lookup(sym_num);
+				if (flag_work == 1)
+				{
+					Add.stack[Add.first++] = sym_num;
+				}
+				else
+				{
+					flag = 1;
+					fouterr << "赋值变量未定义" << endl;
+				}
+			}
+			else
+			{
+				for (int i = 0; i < symbollist.name_count; i++)
+				{
+					if (strcmp(lw[symbollist.name[i]].word, lw[sym_num].word) == 0)
+					{
+						Equal.stack[Equal.first++] = sym_num;
+						Equal.stack[Equal.first++] = 100;
+						putEqual(Equal.first);
+						flag_work = 1;
+						tag = i;
+						break;
+					}
+					else
+						flag_work = 0;
+				}
 			}
 			if (flag_work == 1)
 			{
