@@ -11,6 +11,19 @@ class lexword
 	int type;
 } ;
 
+class Temp
+{
+public:
+	char newtemp;
+	int newtemp_num; 
+	Temp()
+	{
+		newtemp='t';
+		newtemp_num=1;
+	};
+};
+
+void newtemp();
 void Next(); 
 void Before();
 void A();
@@ -38,13 +51,15 @@ void putstart(int pop);
 void putEqual(int pop);
 void putAdd(int pop);
 int lookup(int num);
+
 int sym_num=0,countword=0,flag=0;
 int operator_flag = 0;
 int operator_confirm = 0;
 int sort=0;
 lexword lw[400];
-ofstream fouterr("F:\\grammarerror.txt ",ios::out);//载入自己设定路径输入文件
-ofstream four("F:\\fourout.txt ",ios::out);//载入自己设定路径输入文件 
+Temp ntemp;
+ofstream fouterr("D:\\grammarerror.txt ",ios::out);//载入自己设定路径输入文件
+ofstream four("D:\\fourout.txt ",ios::out);//载入自己设定路径输入文件 
 typedef struct 
 {
 	int stack[10];
@@ -56,6 +71,10 @@ Four Equal;
 Four Judge;
 Four Add;
 
+char control[6][4]={"j<","j>","j<=","j>=","j","jnz"};
+Four Ifistrue;
+Four Ifisfalse;
+
 typedef struct 
 {
 	int name[100];
@@ -66,6 +85,11 @@ typedef struct
 	int num_count;
 }symbol;
 symbol symbollist;
+
+void newtemp()
+{
+	ntemp.newtemp_num++;
+} 
 
 void Next()//得到下一个识别字符 
 {
@@ -110,6 +134,7 @@ void putstart(int pop)
 	four<<">"<<endl;
 	sort++;	
 }
+
 void putEqual(int pop)
 {
 	
@@ -124,7 +149,8 @@ void putEqual(int pop)
    		}
 		 else if (Equal.stack[Equal.end] == 120)
 		 {
-			 four << "t1";
+			 four << ntemp.newtemp<<ntemp.newtemp_num;
+			 newtemp();
 		}
 		 else
    		{
@@ -137,6 +163,7 @@ void putEqual(int pop)
 	four<<">"<<endl;
 	sort++;	
 }
+
 void putAdd(int pop)
 {
 	Add.end = 0;
@@ -146,7 +173,7 @@ void putAdd(int pop)
 	{
 		if (Add.stack[Add.end] == 120)
 		{
-			four << "t1";
+			four << ntemp.newtemp<<ntemp.newtemp_num;
 		}
 		else
 		{
@@ -157,7 +184,7 @@ void putAdd(int pop)
 	}
 	if (Add.stack[Add.end] == 120)
 	{
-		four << "t1";
+		four << ntemp.newtemp<<ntemp.newtemp_num;
 	}
 	four << ">" << endl;
 	sort++;
@@ -167,6 +194,7 @@ void putAdd(int pop)
 
 }
 //〈程序〉→start：AB#
+
 void A()
 {
 	start.first=0;
@@ -328,6 +356,7 @@ void H()//
         }
     }
 }
+
 int lookup(int num)
 {
 	int i = 0;
@@ -344,6 +373,7 @@ int lookup(int num)
 	}
 	return flag;
 }
+
 // I→J｜K
 void I()//
 {
@@ -773,7 +803,21 @@ void K()
     }
     else if (lw[sym_num].num == 14)
     {
-        Next();
+    	Ifistrue.first=0;
+    	int q=sym_num;
+    	q++;
+    	if(strcmp(lw[q].word,"<")==0)
+    		Ifistrue.stack [Ifistrue.first++]=0;
+    	else if(strcmp(lw[q].word,">")==0)
+    		Ifistrue.stack [Ifistrue.first++]=1;
+    	else if(strcmp(lw[q].word,">=")==0)
+    		Ifistrue.stack [Ifistrue.first++]=3;
+     	else if(strcmp(lw[q].word,"<=")==0)
+    		Ifistrue.stack [Ifistrue.first++]=2;
+   		else
+    		Ifistrue.stack [Ifistrue.first++]=5;
+			  
+        Next();   
         O();
     }
     else if (lw[sym_num].num == 10)
@@ -854,7 +898,7 @@ int main()
     symbollist.name_count=0;
     symbollist.num_count=0;
 
-	ifstream fin("F:\\shuchu.txt ",ios::in);//载入自己设定路径输入文件  
+	ifstream fin("D:\\shuchu.txt ",ios::in);//载入自己设定路径输入文件  
 	for(i=0;i<1000;i++)
  		gettxt[i] =fin.get();//输入文件读取到数组a[]中
     fin.close();
@@ -896,7 +940,8 @@ int main()
         cout<<"编译成功"<<endl;
     else
         cout<<"编译出错"<<endl;
-	
+	four << "(" << sort++ << ")";
+    four<<"<sys,_,_,_>"<<endl; 
  	fouterr.close();	
  	four.close();
 	system("pause");
