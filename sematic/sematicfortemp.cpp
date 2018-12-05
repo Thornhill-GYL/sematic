@@ -1,5 +1,6 @@
 #include<iostream>
 #include<fstream>
+#include<string>
 #include<cstring>
 using namespace std;
  
@@ -22,7 +23,31 @@ public:
 		newtemp_num=1;
 	};
 };
+class fourpart
+{
+public:
+	string op;
+	string strleft;
+	string strright;
+	string jumpnum;
+	bool input;
+	fourpart()
+	{
+		op = "";
+		strleft = "";
+		strright = "";
+		jumpnum = "";
+	}
+	fourpart(string op, string strleft, string strright, string jumpnum, bool input)
+	{
+		this->op = op;
+		this->strleft = strleft;
+		this->strright = strright;
+		this->jumpnum = jumpnum;
+		this->input = false;
+	}
 
+};
 void newtemp();
 void Next(); 
 void Before();
@@ -46,20 +71,22 @@ void U();
 void X();
 void Y();
 void Z();
-int newtemp(int show_time);
 void putstart(int pop);
 void putEqual(int pop);
 void putAdd(int pop);
 int lookup(int num);
-
+void create_code(int line);
 int sym_num=0,countword=0,flag=0;
 int operator_flag = 0;
 int operator_confirm = 0;
 int sort=0;
+fourpart create[100];
 lexword lw[400];
+
 Temp ntemp;
-ofstream fouterr("D:\\grammarerror.txt ",ios::out);//载入自己设定路径输入文件
-ofstream four("D:\\fourout.txt ",ios::out);//载入自己设定路径输入文件 
+ofstream fouterr("F:\\grammarerror.txt ",ios::out);//载入自己设定路径输入文件
+ofstream four("F:\\fourout.txt ",ios::out);//载入自己设定路径输入文件 
+ofstream fcreate("F:\\create.txt ", ios::out);
 typedef struct 
 {
 	int stack[10];
@@ -125,7 +152,7 @@ void putstart(int pop)
 		{
 			four<<"_";
    		}
-	//four<<lw[start.stack[start.end]].word;
+	
 	four<<">"<<endl;
 	sort++;	
 }
@@ -134,28 +161,54 @@ void putEqual(int pop)
 {
 	
 	 Equal.end=1;
+	 char s[10] = ":=";
 	four<<"("<<sort<<")";
 	four<<"<";
-	while(Equal.end!=pop)
+	while (Equal.end != pop)
 	{
-		 if(Equal.stack[Equal.end]==100)
+		if (Equal.stack[Equal.end] == 100)
 		{
-			four<<"_";
-   		}
-		 else if (Equal.stack[Equal.end] == 120)
-		 {
-			 four << ntemp.newtemp<<ntemp.newtemp_num;
-			 newtemp();
+			four << "_";
+			if (create[sort].strright == "")
+			{
+				create[sort].strright = "_";
+			}
 		}
-		 else
-   		{
-   			four<<lw[Equal.stack[Equal.end]].word;
+		else if (Equal.stack[Equal.end] == 120)
+		{
+			four << ntemp.newtemp << ntemp.newtemp_num;
+			/*if (create[sort].strleft == " ")
+			{
+
+				create[sort].strleft = ntemp.newtemp + ntemp.newtemp;
+			}*/
+			newtemp();
+
 		}
-		   Equal.end++;
-		   four<<",";
-	}
+		else
+		{
+			four << lw[Equal.stack[Equal.end]].word;
+			if ( strcmp(lw[Equal.stack[Equal.end]].word, s)==0)
+			{
+				create[sort].op = lw[Equal.stack[Equal.end]].word;
+				
+
+			}
+			else
+			{
+				if (create[sort].strleft == "")
+					create[sort].strleft = lw[Equal.stack[Equal.end]].word;
+			}
+
+		}
+			Equal.end++;
+			four << ",";
+		}
+	
 	four<<lw[Equal.stack[0]].word;
+	create[sort].jumpnum = lw[Equal.stack[0]].word;
 	four<<">"<<endl;
+	create_code(sort);
 	sort++;	
 }
 
@@ -169,10 +222,31 @@ void putAdd(int pop)
 		if (Add.stack[Add.end] == 120)
 		{
 			four << ntemp.newtemp<<ntemp.newtemp_num;
+			if (create[sort].jumpnum == "")
+			{
+
+				create[sort].jumpnum = ntemp.newtemp + ntemp.newtemp;
+			}
 		}
 		else
 		{
 			four << lw[Add.stack[Add.end]].word;
+			if ((lw[Add.stack[Add.end]].word == "+") || (lw[Add.stack[Add.end]].word == "-")
+				|| (lw[Add.stack[Add.end]].word == "*") || (lw[Add.stack[Add.end]].word == "/"))
+			{
+				create[sort].op = lw[Add.stack[Add.end]].word;
+			}
+			else
+			{
+				if (create[sort].strleft == "")
+				{
+					create[sort].strleft = lw[Add.stack[Add.end]].word;
+				}
+				else if (create[sort].strright == "")
+				{
+					create[sort].strright = lw[Add.stack[Add.end]].word;
+				}
+			}
 		}
 		Add.end++;
 		four << ",";
@@ -180,6 +254,11 @@ void putAdd(int pop)
 	if (Add.stack[Add.end] == 120)
 	{
 		four << ntemp.newtemp<<ntemp.newtemp_num;
+		if (create[sort].jumpnum == "")
+		{
+
+			create[sort].jumpnum = ntemp.newtemp + ntemp.newtemp;
+		}
 	}
 	four << ">" << endl;
 	sort++;
@@ -189,7 +268,14 @@ void putAdd(int pop)
 
 }
 //〈程序〉→start：AB#
-
+void create_code(int line)
+{
+	
+	fcreate << create[line].jumpnum << create[line].op;
+	fcreate<< create[line] .strleft<< create[line].strright << endl;
+	
+	
+}
 void A()
 {
 	start.first=0;
@@ -880,7 +966,7 @@ int main()
     symbollist.name_count=0;
     symbollist.num_count=0;
 
-	ifstream fin("D:\\shuchu.txt ",ios::in);//载入自己设定路径输入文件  
+	ifstream fin("F:\\shuchu.txt ",ios::in);//载入自己设定路径输入文件  
 	for(i=0;i<1000;i++)
  		gettxt[i] =fin.get();//输入文件读取到数组a[]中
     fin.close();
@@ -924,8 +1010,10 @@ int main()
         cout<<"编译出错"<<endl;
 	four << "(" << sort++ << ")";
     four<<"<sys,_,_,_>"<<endl; 
+	
  	fouterr.close();	
  	four.close();
+	fcreate.close();
 	system("pause");
  	return 0;
 }
