@@ -2,6 +2,7 @@
 #include<fstream>
 #include<string>
 #include<cstring>
+#include<sstream>
 using namespace std;
  
 class lexword
@@ -162,6 +163,8 @@ void putEqual(int pop)
 	
 	 Equal.end=1;
 	 char s[10] = ":=";
+	 string temp = "t";
+	 stringstream for_temp;
 	four<<"("<<sort<<")";
 	four<<"<";
 	while (Equal.end != pop)
@@ -176,12 +179,16 @@ void putEqual(int pop)
 		}
 		else if (Equal.stack[Equal.end] == 120)
 		{
+			
 			four << ntemp.newtemp << ntemp.newtemp_num;
-			/*if (create[sort].strleft == " ")
+			
+			for_temp <<temp <<ntemp.newtemp_num;
+			//cout << for_temp.str();
+			if (create[sort].strleft == "")
 			{
 
-				create[sort].strleft = ntemp.newtemp + ntemp.newtemp;
-			}*/
+				create[sort].strleft = for_temp.str();
+			}
 			newtemp();
 
 		}
