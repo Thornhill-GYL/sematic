@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include<fstream>
 #include<string>
 #include<cstring>
@@ -12,7 +12,11 @@ class lexword
 	char word[10];	
 	int type;
 } ;
-
+typedef struct 
+{
+	string name;
+	int value;
+}keep_data;
 class Temp
 {
 public:
@@ -28,24 +32,23 @@ class fourpart
 {
 public:
 	string op;
-	string strleft;
-	string strright;
-	string jumpnum;
+	keep_data strleft;
+	keep_data strright;
+	keep_data jumpnum;
+	keep_data strtemp;
 	bool input;
+	int value;
 	fourpart()
 	{
 		op = "";
-		strleft = "";
-		strright = "";
-		jumpnum = "";
-	}
-	fourpart(string op, string strleft, string strright, string jumpnum, bool input)
-	{
-		this->op = op;
-		this->strleft = strleft;
-		this->strright = strright;
-		this->jumpnum = jumpnum;
-		this->input = false;
+		strleft.name = "";
+		strright.name = "";
+		jumpnum.name = "";
+		strtemp.name = "";
+		strtemp.value = 0;
+		strleft.value = 0;
+		strright.value = 0;
+		jumpnum.value = 0;
 	}
 
 };
@@ -76,10 +79,14 @@ void putstart(int pop);
 void putEqual(int pop);
 void putAdd(int pop);
 int lookup(int num);
-void create_code(int line);
+void equal_get(int line);
+void op_get(int line);
+void create_code_equal(int line);
+void get_value(int line);
 int sym_num=0,countword=0,flag=0;
 int operator_flag = 0;
 int operator_confirm = 0;
+int key_parrtern = 0;
 int sort=0;
 fourpart create[100];
 lexword lw[400];
@@ -172,9 +179,9 @@ void putEqual(int pop)
 		if (Equal.stack[Equal.end] == 100)
 		{
 			four << "_";
-			if (create[sort].strright == "")
+			if (create[sort].strright.name== "")
 			{
-				create[sort].strright = "_";
+				create[sort].strright.name= "";
 			}
 		}
 		else if (Equal.stack[Equal.end] == 120)
@@ -184,10 +191,11 @@ void putEqual(int pop)
 			
 			for_temp <<temp <<ntemp.newtemp_num;
 			//cout << for_temp.str();
-			if (create[sort].strleft == "")
+			if (create[sort].strleft.name== "")
 			{
 
-				create[sort].strleft = for_temp.str();
+				create[sort].strleft.name = for_temp.str();
+				
 			}
 			newtemp();
 
@@ -203,8 +211,8 @@ void putEqual(int pop)
 			}
 			else
 			{
-				if (create[sort].strleft == "")
-					create[sort].strleft = lw[Equal.stack[Equal.end]].word;
+				if (create[sort].strleft.name== "")
+					create[sort].strleft.name = lw[Equal.stack[Equal.end]].word;
 			}
 
 		}
@@ -213,76 +221,247 @@ void putEqual(int pop)
 		}
 	
 	four<<lw[Equal.stack[0]].word;
-	create[sort].jumpnum = lw[Equal.stack[0]].word;
+	create[sort].jumpnum .name= lw[Equal.stack[0]].word;
 	four<<">"<<endl;
-	create_code(sort);
+	equal_get(sort);
 	sort++;	
 }
 
 void putAdd(int pop)
 {
+	string temp = "t";
+	stringstream for_temp;
+	string more = "+";
+	string less = "-";
+	string both = "*";
+	string half = "/";
 	Add.end = 0;
 	four << "(" << sort << ")";
 	four << "<";
 	while (Add.end != pop-1)
 	{
-		if (Add.stack[Add.end] == 120)
-		{
-			four << ntemp.newtemp<<ntemp.newtemp_num;
-			if (create[sort].jumpnum == "")
-			{
-
-				create[sort].jumpnum = ntemp.newtemp + ntemp.newtemp;
-			}
-		}
-		else
-		{
+		
 			four << lw[Add.stack[Add.end]].word;
-			if ((lw[Add.stack[Add.end]].word == "+") || (lw[Add.stack[Add.end]].word == "-")
-				|| (lw[Add.stack[Add.end]].word == "*") || (lw[Add.stack[Add.end]].word == "/"))
+			if ((lw[Add.stack[Add.end]].word == more) || (lw[Add.stack[Add.end]].word == less)
+				|| (lw[Add.stack[Add.end]].word == both) || (lw[Add.stack[Add.end]].word == half))
 			{
 				create[sort].op = lw[Add.stack[Add.end]].word;
 			}
 			else
 			{
-				if (create[sort].strleft == "")
+				if (create[sort].strleft.name== "")
 				{
-					create[sort].strleft = lw[Add.stack[Add.end]].word;
+					create[sort].strleft.name = lw[Add.stack[Add.end]].word;
 				}
-				else if (create[sort].strright == "")
+				else if (create[sort].strright.name == "")
 				{
-					create[sort].strright = lw[Add.stack[Add.end]].word;
+					create[sort].strright.name = lw[Add.stack[Add.end]].word;
 				}
 			}
-		}
 		Add.end++;
 		four << ",";
 	}
 	if (Add.stack[Add.end] == 120)
 	{
 		four << ntemp.newtemp<<ntemp.newtemp_num;
-		if (create[sort].jumpnum == "")
+		for_temp << temp << ntemp.newtemp_num;
+		if (create[sort].strtemp.name == "")
 		{
 
-			create[sort].jumpnum = ntemp.newtemp + ntemp.newtemp;
+			create[sort].strtemp.name = for_temp.str();
 		}
 	}
 	four << ">" << endl;
+	op_get(sort);
 	sort++;
 	operator_flag = 0;
 	operator_confirm = 0;
 
 
 }
-//¡´³ÌÐò¡µ¡ústart£ºAB#
-void create_code(int line)
+void get_value(int line)
 {
+	string vain = "_";
+	int right_flag = 0;
+	for (int i = 0; i < sort; i++)
+	{
+		if (create[line].strleft.name == create[i].jumpnum.name)
+		{
+
+			create[line].strleft.value = create[i].jumpnum.value;
+			/*cout << create[line].strleft.name;
+			cout << create[line].strleft.value;
+			cout << endl;*/
+		}
+		if (create[line].strright.name == create[i].jumpnum.name)
+		{
+			create[line].strright.value = create[i].jumpnum.value;
+			right_flag = 1;
+			
+		}
+	}
+	if (right_flag == 0 && create[line].strright.name != "")
+	{
+		cout << create[line].strright.name;
+		create[line].strright.value=atoi(create[line].strright.name.c_str());
+		cout << create[line].strright.value;
+	}
+	cout << create[line].strright.name;
 	
-	fcreate << create[line].jumpnum << create[line].op;
-	fcreate<< create[line] .strleft<< create[line].strright << endl;
+	cout << endl;
+}
+void op_get(int line)
+{
+	int middle_num = 0;
+	string more = "+";
+	string less = "-";
+	string both = "*";
+	string half = "/";
+	if (create[line].op == more)
+	{
+		
+		
+		get_value(line);
+		create[line].strtemp.value = create[line].strleft.value+ create[line].strright.value;
+		
+	}
+	else if (create[line].op == both)
+	{
+		get_value(line);
+		create[line].strtemp.value = create[line].strleft.value * create[line].strright.value;
+	}
+	else if (create[line].op == less)
+	{
+		get_value(line);
+		create[line].strtemp.value = create[line].strleft.value - create[line].strright.value;
+		cout << create[line].strtemp.name;
+		cout << create[line].strtemp.value;
+		cout << endl;
+	}
+}
+int compare(int line)
+{
+	int compare_flag = 0;
+	int count_flag = 0;
+	for (int i = 1; i < line; i++)
+	{
+		if (create[line].strleft.name == create[i].jumpnum.name)
+		{
+			create[line].strleft.value= create[i].jumpnum.value;
+			count_flag++;
+			
+		}
+		else
+		{
+			count_flag += 0;
+		}
+	}
+	if (count_flag == 0)
+	{
+		compare_flag = 0;
+	}
+	else
+	{
+		compare_flag = 1;
+	}
+	return compare_flag;
+}
+void equal_get(int line)
+{
+	int key_num;
+	int temp_key = 5;
+	int temp_num = 0;
+	for (int i = 0; i < symbollist.name_count; i++)
+	{
+		if (lw[symbollist.name[i]].word == create[line].jumpnum.name)
+		{
+			key_num = i;
+			break;
+		}
+		else 
+		{
+			key_num = -1;
+		}
+	}
+	if (key_num != -1)
+	{
+		if (symbollist.key[key_num] == temp_key )
+		{
+			if (create[line].strleft.name == create[line - 1].strtemp.name)
+			{
+				create[line].jumpnum.value = create[line - 1].strtemp.value;
+			}
+			else if (compare(sort)==1)
+			{
+				create[line].jumpnum.value = create[line].strleft.value;
+			}
+			else
+			{
+				temp_num = atoi(create[line].strleft.name.c_str());
+				//printf("%d", temp_num);
+				create[line].jumpnum.value = temp_num;
+			}
+			/*cout << create[line].strleft.name;
+			cout << create[line].jumpnum.value;
+			cout << endl;*/
+			
+		}
+	}
+	for (int i = 1; i < line; i++)
+	{
+		if (create[line].jumpnum.name == create[i].jumpnum.name)
+		{
+			create[i].jumpnum.value = create[line].jumpnum.value;
+		}
+	}
+	cout << create[line].jumpnum.name;
+	cout << create[line].jumpnum.value;
+	cout << endl;
 	
 	
 }
+typedef struct
+{
+	string name;
+	int flag;
+	int count;
+}same;
+
+
+void create_code_equal(int line)
+{
+	int i = 0, j = 0;
+	string out_name[100];
+	same same_judge[100];
+	 int out_num=0;
+	 int out_flag = 0;
+	 int same_flag = 0;
+	 fcreate << create[1].jumpnum.name << "=" << create[1].jumpnum.value << endl;
+	for (i = 2; i <sort; i++)
+	{
+		j = i-1;
+		while (j != 0)
+		{
+			if (create[i].jumpnum.name != create[j].jumpnum.name)
+			{
+				same_flag = 0;
+			}
+			else
+			{
+				same_flag = 1;
+				break;
+			}
+			j--;
+		}
+		if (same_flag == 0&&create[i].jumpnum.name!="")
+		{
+			fcreate << create[i].jumpnum.name << "=" << create[i].jumpnum.value << endl;
+		}
+		
+	}
+	
+}
+//¡´³ÌÐò¡µ¡ústart£ºAB#
 void A()
 {
 	start.first=0;
@@ -346,6 +525,7 @@ void B()//
 //E¡úF£ºG£»£üF£ºG£»E
 void C()//
 {
+	
     if (F())
     {
         Next();
@@ -354,10 +534,15 @@ void C()//
         	Next();
             if (lw[sym_num].num == 5 || lw[sym_num].num == 6 || lw[sym_num].num == 7)//integer,bool,real
             {
+				
                 int j = sym_num;
                 j = j - 2;
-                lw[j].type = lw[sym_num].num;
-                symbollist.key[symbollist.key_count++]=lw[j].type;
+				lw[j].type = lw[sym_num].num;
+				if (lw[sym_num].num == 5)
+				{
+					for (int i = 0; i < symbollist.name_count; i++)
+						symbollist.key[i] = lw[sym_num].num;
+				}
                 j--;
                 while (lw[sym_num].num == 27)
                 {
@@ -969,7 +1154,7 @@ int main()
 {
 	char gettxt[1000];
 	int i,j=0,k=0;
-	symbollist.key_count=0;
+	symbollist.key_count = 0;
     symbollist.name_count=0;
     symbollist.num_count=0;
 
@@ -1017,7 +1202,7 @@ int main()
         cout<<"±àÒë³ö´í"<<endl;
 	four << "(" << sort++ << ")";
     four<<"<sys,_,_,_>"<<endl; 
-	
+	create_code_equal(sort);
  	fouterr.close();	
  	four.close();
 	fcreate.close();
