@@ -1,3 +1,5 @@
-﻿  sematicfortemp.cpp
+﻿  sematicwithif.cpp
+f:\code\c++\sematic\sematicwithif.cpp(1269): warning C4101: “sort1”: 未引用的局部变量
+f:\code\c++\sematic\sematicwithif.cpp(1296): warning C4101: “sort1”: 未引用的局部变量
   sematic.vcxproj -> F:\code\c++\sematic\Debug\sematic.exe
   sematic.vcxproj -> F:\code\c++\sematic\Debug\sematic.pdb (Partial PDB)

@@ -83,6 +83,7 @@ void equal_get(int line);
 void op_get(int line);
 void create_code_equal(int line);
 void get_value(int line);
+
 int sym_num=0,countword=0,flag=0;
 int operator_flag = 0;
 int operator_confirm = 0;
